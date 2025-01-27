@@ -1,8 +1,8 @@
 import { Component, Input, OnInit, OnChanges, Inject, LOCALE_ID, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
-import { RbfTree, RbfTransaction } from '../../interfaces/node-api.interface';
-import { StateService } from '../../services/state.service';
-import { ApiService } from '../../services/api.service';
+import { RbfTree, RbfTransaction } from '@interfaces/node-api.interface';
+import { StateService } from '@app/services/state.service';
+import { ApiService } from '@app/services/api.service';
 
 type Connector = 'pipe' | 'corner';
 
@@ -25,7 +25,9 @@ function isTimelineCell(val: RbfTree | TimelineCell): boolean {
 export class RbfTimelineComponent implements OnInit, OnChanges {
   @Input() replacements: RbfTree;
   @Input() txid: string;
+  @Input() rowLimit: number = 5; // If explicitly set to 0, all timelines rows will be displayed by default
   rows: TimelineCell[][] = [];
+  timelineExpanded: boolean = this.rowLimit === 0;
 
   hoverInfo: RbfTree | null = null;
   tooltipPosition = null;
@@ -49,7 +51,7 @@ export class RbfTimelineComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes): void {
     this.rows = this.buildTimelines(this.replacements);
-    if (changes.txid) {
+    if (changes.txid && !changes.txid.firstChange && changes.txid.previousValue !== changes.txid.currentValue) {
       setTimeout(() => { this.scrollToSelected(); });
     }
   }
@@ -189,6 +191,10 @@ export class RbfTimelineComponent implements OnInit, OnChanges {
       });
     });
     return rows;
+  }
+
+  toggleTimeline(expand: boolean): void {
+    this.timelineExpanded = expand;
   }
 
   scrollToSelected() {

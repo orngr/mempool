@@ -6,6 +6,7 @@ export namespace IEsploraApi {
     size: number;
     weight: number;
     fee: number;
+    sigops?: number;
     vin: Vin[];
     vout: Vout[];
     status: Status;
@@ -53,7 +54,7 @@ export namespace IEsploraApi {
     scriptpubkey: string;
     scriptpubkey_asm: string;
     scriptpubkey_type: string;
-    scriptpubkey_address: string;
+    scriptpubkey_address?: string;
     value: number;
     // Elements
     valuecommitment?: number;
@@ -178,4 +179,11 @@ export namespace IEsploraApi {
     burn_count: number;
   }
 
+  export interface AddressTxSummary {
+    txid: string;
+    value: number;
+    height: number;
+    time: number;
+    tx_position?: number;
+  }
 }
