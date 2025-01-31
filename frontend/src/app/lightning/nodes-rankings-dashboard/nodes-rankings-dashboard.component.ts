@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { Observable, share } from 'rxjs';
-import { INodesRanking } from '../../interfaces/node-api.interface';
-import { SeoService } from '../../services/seo.service';
-import { LightningApiService } from '../lightning-api.service';
+import { INodesRanking } from '@interfaces/node-api.interface';
+import { SeoService } from '@app/services/seo.service';
+import { LightningApiService } from '@app/lightning/lightning-api.service';
 
 @Component({
   selector: 'app-nodes-rankings-dashboard',
@@ -20,7 +20,7 @@ export class NodesRankingsDashboard implements OnInit {
 
   ngOnInit(): void {
     this.seoService.setTitle($localize`Top lightning nodes`);
-    this.seoService.setDescription($localize`:@@meta.description.lightning.rankings-dashboard:See top the Lightning network nodes ranked by liquidity, connectivity, and age.`);
+    this.seoService.setDescription($localize`:@@meta.description.lightning.rankings-dashboard:See the top Lightning network nodes ranked by liquidity, connectivity, and age.`);
     this.nodesRanking$ = this.lightningApiService.getNodesRanking$().pipe(share());
   }
 }

@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, Inject, LOCALE_ID, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { EChartsOption, graphic } from 'echarts';
+import { echarts, EChartsOption } from '@app/graphs/echarts';
 import { Observable, of } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
-import { PoolStat } from '../../interfaces/node-api.interface';
-import { ApiService } from '../../services/api.service';
-import { StateService } from '../../services/state.service';
+import { PoolStat } from '@interfaces/node-api.interface';
+import { ApiService } from '@app/services/api.service';
+import { StateService } from '@app/services/state.service';
 import { formatNumber } from '@angular/common';
-import { SeoService } from '../../services/seo.service';
-import { OpenGraphService } from '../../services/opengraph.service';
+import { SeoService } from '@app/services/seo.service';
+import { OpenGraphService } from '@app/services/opengraph.service';
 
 @Component({
   selector: 'app-pool-preview',
@@ -127,7 +127,7 @@ export class PoolPreviewComponent implements OnInit {
       title: title,
       animation: false,
       color: [
-        new graphic.LinearGradient(0, 0, 0, 0.65, [
+        new echarts.graphic.LinearGradient(0, 0, 0, 0.65, [
           { offset: 0, color: '#F4511E' },
           { offset: 0.25, color: '#FB8C00' },
           { offset: 0.5, color: '#FFB300' },

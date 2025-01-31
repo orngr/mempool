@@ -4,16 +4,16 @@ import { UntypedFormGroup, UntypedFormBuilder } from '@angular/forms';
 import { of, merge} from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-import { OptimizedMempoolStats } from '../../interfaces/node-api.interface';
-import { WebsocketService } from '../../services/websocket.service';
-import { ApiService } from '../../services/api.service';
+import { OptimizedMempoolStats } from '@interfaces/node-api.interface';
+import { WebsocketService } from '@app/services/websocket.service';
+import { ApiService } from '@app/services/api.service';
 
-import { StateService } from '../../services/state.service';
-import { SeoService } from '../../services/seo.service';
-import { StorageService } from '../../services/storage.service';
-import { feeLevels, chartColors } from '../../app.constants';
-import { MempoolGraphComponent } from '../mempool-graph/mempool-graph.component';
-import { IncomingTransactionsGraphComponent } from '../incoming-transactions-graph/incoming-transactions-graph.component';
+import { StateService } from '@app/services/state.service';
+import { SeoService } from '@app/services/seo.service';
+import { StorageService } from '@app/services/storage.service';
+import { feeLevels, chartColors } from '@app/app.constants';
+import { MempoolGraphComponent } from '@components/mempool-graph/mempool-graph.component';
+import { IncomingTransactionsGraphComponent } from '@components/incoming-transactions-graph/incoming-transactions-graph.component';
 
 @Component({
   selector: 'app-statistics',
@@ -26,16 +26,15 @@ export class StatisticsComponent implements OnInit {
 
   network = '';
 
-  loading = true;
-  spinnerLoading = false;
+  isLoading = true;
   feeLevels = feeLevels;
   chartColors = chartColors;
   filterSize = 100000;
   filterFeeIndex = 1;
-  showCount = true;
+  showCount = false;
   maxFeeIndex: number;
   dropDownOpen = false;
-
+  outlierCappingEnabled = false;
   mempoolStats: OptimizedMempoolStats[] = [];
 
   mempoolVsizeFeesData: any;
@@ -67,6 +66,7 @@ export class StatisticsComponent implements OnInit {
     this.seoService.setDescription($localize`:@@meta.description.bitcoin.graphs.mempool:See mempool size (in MvB) and transactions per second (in vB/s) visualized over time.`);
     this.stateService.networkChanged$.subscribe((network) => this.network = network);
     this.graphWindowPreference = this.storageService.getValue('graphWindowPreference') ? this.storageService.getValue('graphWindowPreference').trim() : '2h';
+    this.outlierCappingEnabled = this.storageService.getValue('cap-outliers') === 'true';
 
     this.radioGroupForm = this.formBuilder.group({
       dateSpan: this.graphWindowPreference
@@ -89,7 +89,7 @@ export class StatisticsComponent implements OnInit {
     .pipe(
       switchMap(() => {
         this.timespan = this.radioGroupForm.controls.dateSpan.value;
-        this.spinnerLoading = true;
+        this.isLoading = true;
         if (this.radioGroupForm.controls.dateSpan.value === '2h') {
           this.websocketService.want(['blocks', 'live-2h-chart']);
           return this.apiService.list2HStatistics$();
@@ -130,8 +130,7 @@ export class StatisticsComponent implements OnInit {
     .subscribe((mempoolStats: any) => {
       this.mempoolStats = mempoolStats;
       this.handleNewMempoolData(this.mempoolStats.concat([]));
-      this.loading = false;
-      this.spinnerLoading = false;
+      this.isLoading = false;
     });
 
     this.stateService.live2Chart$
@@ -155,8 +154,6 @@ export class StatisticsComponent implements OnInit {
       });
     }
     this.maxFeeIndex = maxTier;
-
-    this.capExtremeVbytesValues();
 
     this.mempoolTransactionsWeightPerSecondData = {
       labels: labels,
@@ -211,36 +208,10 @@ export class StatisticsComponent implements OnInit {
       }
     });
   }
-
-  /**
-   * All value higher that "median * capRatio" are capped
-   */
-  capExtremeVbytesValues() {
-    if (this.stateService.network.length !== 0) {
-      return; // Only cap on Bitcoin mainnet
-    }
-
-    let capRatio = 10;
-    if (['1m', '3m',  '6m', '1y', '2y', '3y', '4y'].includes(this.graphWindowPreference)) {
-      capRatio = 4;
-    }
-
-    // Find median value
-    const vBytes: number[] = [];
-    for (const stat of this.mempoolStats) {
-      vBytes.push(stat.vbytes_per_second);
-    }
-    const sorted = vBytes.slice().sort((a, b) => a - b);
-    const middle = Math.floor(sorted.length / 2);
-    let median = sorted[middle];
-    if (sorted.length % 2 === 0) {
-      median = (sorted[middle - 1] + sorted[middle]) / 2;
-    }
-
-    // Cap
-    for (const stat of this.mempoolStats) {
-      stat.vbytes_per_second = Math.min(median * capRatio, stat.vbytes_per_second);
-    }
+  
+  onOutlierToggleChange(e): void {
+    this.outlierCappingEnabled = e.target.checked;
+    this.storageService.setValue('cap-outliers', e.target.checked);
   }
 
   onSaveChart(name) {

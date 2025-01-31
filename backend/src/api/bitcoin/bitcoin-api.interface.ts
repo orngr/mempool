@@ -106,6 +106,7 @@ export namespace IBitcoinApi {
       address?: string;              //  (string) bitcoin address
       addresses?: string[];           //  (string) bitcoin addresses
       pegout_chain?: string;         //  (string) Elements peg-out chain
+      pegout_address?: string;       //  (string) Elements peg-out address
       pegout_addresses?: string[];   //  (string) Elements peg-out addresses
     };
   }
@@ -203,4 +204,35 @@ export namespace IBitcoinApi {
     "utxo_increase": number;
     "utxo_size_inc": number;
   }
+}
+
+export interface TestMempoolAcceptResult {
+  txid: string,
+  wtxid: string,
+  allowed?: boolean,
+  vsize?: number,
+  fees?: {
+    base: number,
+    "effective-feerate": number,
+    "effective-includes": string[],
+  },
+  ['reject-reason']?: string,
+}
+
+export interface SubmitPackageResult {
+  package_msg: string;
+  "tx-results": { [wtxid: string]: TxResult };
+  "replaced-transactions"?: string[];
+}
+
+export interface TxResult {
+  txid: string;
+  "other-wtxid"?: string;
+  vsize?: number;
+  fees?: {
+    base: number;
+    "effective-feerate"?: number;
+    "effective-includes"?: string[];
+  };
+  error?: string;
 }

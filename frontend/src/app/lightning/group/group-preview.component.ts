@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { map, switchMap, Observable, catchError, of } from 'rxjs';
-import { SeoService } from '../../services/seo.service';
-import { OpenGraphService } from '../../services/opengraph.service';
-import { GeolocationData } from '../../shared/components/geolocation/geolocation.component';
-import { LightningApiService } from '../lightning-api.service';
+import { SeoService } from '@app/services/seo.service';
+import { OpenGraphService } from '@app/services/opengraph.service';
+import { GeolocationData } from '@app/shared/components/geolocation/geolocation.component';
+import { LightningApiService } from '@app/lightning/lightning-api.service';
 
 interface NodeGroup {
   name: string;
@@ -57,7 +57,7 @@ export class GroupPreviewComponent implements OnInit {
             return of(null);
           }
 
-          return this.lightningApiService.getNodGroupNodes$(this.groupId);
+          return this.lightningApiService.getNodeGroup$(this.groupId);
         }),
         map((nodes) => {
           for (const node of nodes) {
